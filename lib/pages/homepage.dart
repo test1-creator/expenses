@@ -11,45 +11,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<Transaction> _userTransaction = [
-    // Transaction(
-    //     id: "t1", title: "New shoes", amount: 69.99, date: DateTime.now()),
-    // Transaction(
-    //     id: "t2",
-    //     title: "Weekly Groceries",
-    //     amount: 16.53,
-    //     date: DateTime.now()),
-    // Transaction(
-    //     id: "t2",
-    //     title: "Weekly Groceries",
-    //     amount: 16.53,
-    //     date: DateTime.now()),
-    // Transaction(
-    //     id: "t2",
-    //     title: "Weekly Groceries",
-    //     amount: 16.53,
-    //     date: DateTime.now()),
-    // Transaction(
-    //     id: "t2",
-    //     title: "Weekly Groceries",
-    //     amount: 16.53,
-    //     date: DateTime.now()),
-    // Transaction(
-    //     id: "t2",
-    //     title: "Weekly Groceries",
-    //     amount: 16.53,
-    //     date: DateTime.now()),
-    // Transaction(
-    //     id: "t2",
-    //     title: "Weekly Groceries",
-    //     amount: 16.53,
-    //     date: DateTime.now()),
-    // Transaction(
-    //     id: "t2",
-    //     title: "Weekly Groceries",
-    //     amount: 16.53,
-    //     date: DateTime.now()),
-  ];
+  final List<Transaction> _userTransaction = [];
+  bool _showChart = false;
 
   List<Transaction> get _recentTransactions {
     return _userTransaction.where((tx) {
@@ -58,15 +21,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   //Method to add transaction to a userTransaction list
-  void _addNewTransaction(String txTitle, double txAmount) {
+  void _addNewTransaction(String txTitle, double txAmount, DateTime chosenDate) {
     final newTx = Transaction(
         title: txTitle,
         amount: txAmount,
-        date: DateTime.now(),
+        date: chosenDate,
         id: DateTime.now().toString());
 
     setState(() {
       _userTransaction.add(newTx);
+    });
+  }
+
+  void _deleteTransaction(String id) {
+    setState(() {
+      _userTransaction.removeWhere((tx) => tx.id == id);
     });
   }
 
@@ -83,8 +52,12 @@ class _HomePageState extends State<HomePage> {
   }
 
 
+
   @override
   Widget build(BuildContext context) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    var _height = MediaQuery.of(context).size.height;
+
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -96,9 +69,30 @@ class _HomePageState extends State<HomePage> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              Chart(_recentTransactions),
+              if(isLandscape) Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Show Chart'),
+                  Switch(value: _showChart, onChanged: (value) {
+                    setState(() {
+                      _showChart = value;
+                    });
+                  }),
+                ],
+              ),
+
+              if(!isLandscape)
+                Container(
+                  height: _height * 0.2,
+                  child: Chart(_recentTransactions),),
+
+              _showChart ? Container(
+                height: _height * 0.5,
+                  child: Chart(_recentTransactions),) :
               //Contains a listView of all transactions
-              TransactionList(_userTransaction),
+              TransactionList(_userTransaction, _deleteTransaction),
+
+
             ],
           ),
         ),
